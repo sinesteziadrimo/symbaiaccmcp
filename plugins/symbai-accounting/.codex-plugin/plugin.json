@@ -1,0 +1,39 @@
+{
+  "name": "symbai-accounting",
+  "version": "0.3.0+codex",
+  "description": "Asistentul Symbai Accounting pentru Codex: skill-uri si cunostinte RO despre plan de conturi, monografii, TVA, declaratii, salarizare si catalogul MCP live pentru contabilitate MCP-first. Independent de Symbai POS/Hub.",
+  "author": {
+    "name": "Symbai",
+    "email": "support@symbai.app",
+    "url": "https://symbai.app"
+  },
+  "homepage": "https://github.com/sinesteziadrimo/symbaiaccmcp#readme",
+  "repository": "https://github.com/sinesteziadrimo/symbaiaccmcp",
+  "license": "MIT",
+  "keywords": [
+    "symbai",
+    "accounting",
+    "contabilitate",
+    "mcp",
+    "codex"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Symbai Accounting",
+    "shortDescription": "Lucreaza in contabilitatea Symbai din Codex.",
+    "longDescription": "Skill-uri si cunostinte pentru facturi, jurnal, plan de conturi, monografii contabile, TVA, declaratii fiscale, parteneri, stocuri, salarizare, banca si casa in Symbai Accounting. Conectarea MCP live se configureaza din aplicatia de contabilitate.",
+    "developerName": "Symbai",
+    "category": "Productivity",
+    "capabilities": [
+      "Knowledge",
+      "Workflow",
+      "MCP"
+    ],
+    "defaultPrompt": [
+      "Conecteaza-ma la Symbai Accounting.",
+      "Arata-mi tabloul de bord contabil.",
+      "Explica-mi cum postez o nota contabila in siguranta."
+    ],
+    "brandColor": "#0F766E"
+  }
+}

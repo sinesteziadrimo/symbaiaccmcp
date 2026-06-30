@@ -1,0 +1,22 @@
+{
+  "name": "symbai-acc",
+  "owner": {
+    "name": "Symbai",
+    "email": "support@symbai.app"
+  },
+  "metadata": {
+    "description": "Cunoștințe și skill-uri pentru a folosi Symbai Accounting prin Claude Code / Codex + MCP live: plan de conturi & monografii, TVA, declarații fiscale (D300/D394/D406/D112), facturi, jurnal, parteneri, stocuri, bancă, salarizare. Independent de Symbai POS/Hub — pentru contabili care folosesc DOAR softul de contabilitate."
+  },
+  "plugins": [
+    {
+      "name": "symbai-accounting",
+      "source": "./plugins/symbai-accounting",
+      "description": "Asistentul Symbai Accounting: ghiduri + cunoștințe RO (plan de conturi & monografii, TVA, declarații, salarizare, regimuri) + catalogul MCP live (rapoarte calculate, parteneri, stocuri, bancă). Conectare locală, fără cont Hub; MCP-first, cu confirmări pe acțiunile ireversibile și verificare prin citire.",
+      "version": "0.3.0",
+      "author": { "name": "Symbai" },
+      "homepage": "https://github.com/sinesteziadrimo/symbaiaccmcp",
+      "repository": "https://github.com/sinesteziadrimo/symbaiaccmcp",
+      "license": "MIT"
+    }
+  ]
+}

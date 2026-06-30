@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/self-heal-marketplace.mjs\"",
+            "timeout": 20,
+            "statusMessage": "Verific actualizările Symbai Accounting..."
+          }
+        ]
+      }
+    ]
+  }
+}
