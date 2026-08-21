@@ -12,7 +12,7 @@ Scop: serverul MCP `symbai-accounting` să apară conectat în sesiunile Claude 
 ## Ce îți trebuie de la utilizator
 
 - **URL-ul instanței de contabilitate**: `https://<instanța-ta>/mcp` (de regulă `https://accounting.symbai.app/mcp`, sau adresa pe care o folosește pentru a se loga în contabilitate). UI-ul afișează endpoint-ul exact sub cardul de token.
-- **Tokenul** `symbai_acc_mcp_...` — îl creează din aplicația de contabilitate → **Setări → Integrări → „Acces AI (MCP)"** → butonul **„Token nou"**. Bifează modulele pe care AI-ul are voie să le **modifice** (citirea e mereu permisă), apoi „Creează token". Tokenul se afișează **o singură dată**. Dacă l-a pierdut: revocă tokenul vechi și creează altul (10 secunde) — nu se poate recupera.
+- **Tokenul** `symbai_acc_mcp_...` — îl creează din aplicația de contabilitate → **Setări → Integrări → „Acces AI (MCP)"** → butonul **„Token nou"**. Alege modulele de **citire** și, separat, modulele pe care AI-ul are voie să le **modifice**, apoi „Creează token". Tokenul se afișează **o singură dată**. Dacă l-a pierdut: revocă tokenul vechi și creează altul (10 secunde) — nu se poate recupera.
 
 ## Configurarea corectă
 
@@ -41,7 +41,7 @@ Pentru comoditate, aplicația îți dă în cardul de token, la creare, **exact*
 1. **Instanța e activă?** POST la `<URL>` fără header → **HTTP 401** „Token MCP lipsă...". 404/HTML → URL greșit.
 2. **Tokenul e valid?** Același POST cu `Authorization: Bearer <TOKEN>` + body JSON-RPC `initialize` → **HTTP 200**. Tot 401 → token revocat/expirat/greșit → regenerează din aplicație.
 3. **După restart**, sesiune nouă: `/mcp` arată `symbai-accounting` conectat.
-4. **Confirmă TU cu un tool** — cheamă `get_dashboard` sau `list_invoices`. Dacă întoarce date, conexiunea + permisiunile sunt OK. „Permisiune insuficientă" pe un tool de scriere = conexiunea e bună, doar modulul nu e bifat pe token → Setări → Integrări → recreează tokenul cu modulul bifat.
+4. **Confirmă TU cu un tool** — cheamă mai întâi `get_company` sau `get_dashboard`, apoi un tool din modulul dorit (de exemplu `list_invoices`). Dacă primul merge, conexiunea este bună. Un tool operațional absent sau „permisiune insuficientă" înseamnă de regulă că modulul de citire/scriere nu este acordat tokenului → Setări → Integrări → recreează tokenul numai cu accesul dorit.
 
 ## Alte cauze frecvente
 

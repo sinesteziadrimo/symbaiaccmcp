@@ -47,7 +47,7 @@ Repornește Claude Code. De aici încolo pluginul se actualizează **singur** la
 
 Separat de plugin, adaugă conexiunea MCP la instanța ta de contabilitate:
 
-1. În aplicația de contabilitate → **Setări → Integrări → „Acces AI (MCP)"** → **„Token nou"**. Bifează modulele pe care AI-ul are voie să le **modifice** (citirea e mereu permisă) și creează tokenul `symbai_acc_mcp_...`. Se afișează **o singură dată** — copiază-l.
+1. În aplicația de contabilitate → **Setări → Integrări → „Acces AI (MCP)"** → **„Token nou"**. Alege separat modulele pe care AI-ul le poate **citi** și pe cele pe care le poate **modifica**, apoi creează tokenul `symbai_acc_mcp_...`. Contextul minim al firmei rămâne disponibil; datele operaționale respectă modulele de citire selectate. Tokenul se afișează **o singură dată** — copiază-l.
 2. Aplicația îți dă, la creare, **exact** comanda CLI și un **mesaj de lipit în chat** pentru conectare. Sau spune-i asistentului „conectează-mă la Symbai Accounting" — skill-ul `conecteaza-accounting` te ghidează (inclusiv la eroarea „Some MCP servers could not be loaded").
 
 Tokenul se validează **local** de instanța ta — nu trece prin Symbai Hub.

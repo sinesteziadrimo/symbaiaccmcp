@@ -6,7 +6,7 @@ Symbai Accounting e platforma de contabilitate AI-first, multi-țară (RO, DE, G
 
 | Modul | Ce acoperă | Modul de scriere (token) |
 |---|---|---|
-| **Tablou de bord & Rapoarte** | KPI firmă, balanță de verificare, P&L, cash-flow, bilanț, vânzări/achiziții, vechime datorii | citire (mereu) |
+| **Tablou de bord & Rapoarte** | KPI firmă, balanță de verificare, P&L, cash-flow, bilanț, vânzări/achiziții, vechime datorii | citire universală pentru context; rapoartele detaliate respectă `readModules` |
 | **Facturi de vânzare (AR)** | facturi emise, facturare eFactura, serii fiscale | `facturare` |
 | **Cheltuieli & facturi primite (AP)** | bonuri/facturi furnizori, facturi primite (eFactura), reguli de mapare, NIR | `cheltuieli` |
 | **Contabilitate (jurnal)** | note contabile (debit=credit), plan de conturi, solduri inițiale, închidere perioadă | `contabilitate` |
@@ -33,3 +33,4 @@ Symbai Accounting e platforma de contabilitate AI-first, multi-țară (RO, DE, G
 - Acțiunile ireversibile (depunere ANAF, închidere perioadă, salarizare, aplicare document stoc, ștergere factură, postare notă) cer `confirm:true` — explică întâi, apoi execută.
 - Banii sunt zecimale (text); nu rotunji prin float; notele contabile trebuie echilibrate.
 - După scriere, verifică prin re-citire și arată dovada.
+- Dacă un tool nu apare, verifică mai întâi modulele de citire/scriere ale tokenului; lista live poate fi restrânsă intenționat.
