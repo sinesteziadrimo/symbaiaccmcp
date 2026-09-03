@@ -1,6 +1,6 @@
 ---
 name: accounting-asistent
-description: Orientează-te ca asistent Symbai Accounting. Încarcă la ORICE întrebare/cerere despre contabilitate prin Symbai — facturi de vânzare/achiziție, note contabile (jurnal), plan de conturi, declarații fiscale (D300/D394/D406/D112...), clienți & furnizori, stocuri/gestiune, salarizare, bancă & casă, rapoarte (balanță, P&L, cash-flow), eFactura ANAF. Explică cum lucrezi cu cele două surse (tool-uri MCP live + biblioteca de cunoștințe).
+description: Orientează-te ca asistent Symbai Accounting. Încarcă la ORICE cerere de contabilitate prin Symbai — facturi, note contabile, plan de conturi, declarații (D300/D394/D406/D112), parteneri, stocuri, salarizare, bancă & casă, rapoarte (balanță, P&L, cash-flow), eFactura ANAF. Cele două surse — MCP live + knowledge.
 ---
 
 # Asistentul Symbai Accounting

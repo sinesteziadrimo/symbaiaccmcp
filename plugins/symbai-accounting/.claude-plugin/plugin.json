@@ -1,7 +1,7 @@
 {
   "name": "symbai-accounting",
   "description": "Asistentul Symbai Accounting pentru Claude Code: skill-uri pas-cu-pas + cunoștințe RO (plan de conturi & monografii, TVA, declarații, salarizare, regimuri) + catalogul de tool-uri MCP live (rapoarte calculate, parteneri, stocuri, bancă). Lucrează MCP-first, cu confirmări pe acțiunile ireversibile și verificare prin citire. Independent de Symbai POS/Hub — conectare locală din aplicația de contabilitate.",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "author": { "name": "Symbai", "email": "support@symbai.app" },
   "homepage": "https://github.com/sinesteziadrimo/symbaiaccmcp#readme",
   "repository": "https://github.com/sinesteziadrimo/symbaiaccmcp",

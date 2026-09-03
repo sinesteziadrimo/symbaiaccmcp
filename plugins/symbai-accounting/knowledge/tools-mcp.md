@@ -1,6 +1,6 @@
 # Catalog MCP — Symbai Accounting
 
-> Sincronizat cu registry-ul aplicației la 15 august 2026: **301 tool-uri**. Sursa de adevăr pentru sesiunea curentă rămâne `tools/list`, deoarece tokenul vede numai modulele sale de citire/scriere. Nu presupune că un tool lipsește doar fiindcă nu apare pe un token restrâns.
+> Sincronizat cu registry-ul aplicației la 15 august 2026: **301 tool-uri**. Sursa de adevăr pentru sesiunea curentă rămâne `tools/list`, deoarece tokenul vede numai modulele sale de citire/scriere. Nu presupune că un tool lipsește doar fiindcă nu apare pe un token restrâns — și nu presupune o „limită a sesiunii": la contabilitate nu există filtrare pe rol de angajat sau pe arie, lista e exact modulele tokenului (spre deosebire de conexiunea `symbai` la POS, unde contul de angajat e filtrat și de rolul POS și de aria lui).
 
 ## Permisiuni și reguli de siguranță
 

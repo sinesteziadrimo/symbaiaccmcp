@@ -1,6 +1,6 @@
 ---
 name: conecteaza-accounting
-description: Configurează sau repară conexiunea MCP la instanța Symbai Accounting (serverul "symbai-accounting"). Folosește când tool-urile de contabilitate nu apar în sesiune, la „conectează-mă la Symbai Accounting / la contabilitate", „nu am acces la facturile/datele mele de contabilitate", erori 401 / „Token MCP lipsă", sau eroarea Claude Desktop „Some MCP servers could not be loaded".
+description: Configurează sau repară conexiunea MCP la Symbai Accounting (serverul „symbai-accounting"). La „conectează-mă la contabilitate", „nu apar tool-urile de contabilitate", „văd puține tool-uri", „nu am acces la facturile mele", 401 / „Token MCP lipsă", „Some MCP servers could not be loaded".
 ---
 
 # Conectează / repară conexiunea Symbai Accounting (MCP)
@@ -48,3 +48,4 @@ Pentru comoditate, aplicația îți dă în cardul de token, la creare, **exact*
 - **Aplicația nu a fost repornită complet** — conexiunile MCP se încarcă la pornire.
 - **„Permisiune insuficientă" la scriere** — modulul nu e bifat pe token; tokenurile nu se pot edita, deci recreează-l cu modulele dorite.
 - **Accesul s-a oprit brusc** — tokenul a fost revocat sau a expirat → verifică în Setări → Integrări → Acces AI (MCP).
+- **„Văd puține tool-uri"** — la contabilitate lista din `tools/list` e exact ce permit modulele tokenului; nu există filtrare pe rol de angajat sau pe arie (brand/locație). Dacă lipsesc tool-uri, recreează tokenul cu modulele dorite. NU e o limită a sesiunii. (Diferit de conexiunea `symbai` la POS, unde contul de angajat e filtrat și de rolul POS și de aria lui — acolo diagnosticul e `verifica_conexiune`, iar remediul e în Personal.)
