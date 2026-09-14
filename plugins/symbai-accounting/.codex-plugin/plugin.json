@@ -1,6 +1,6 @@
 {
   "name": "symbai-accounting",
-  "version": "0.4.1+codex",
+  "version": "0.4.2+codex.20260914045321",
   "description": "Asistentul Symbai Accounting pentru Codex: skill-uri si cunostinte RO despre plan de conturi, monografii, TVA, declaratii, salarizare si catalogul MCP live pentru contabilitate MCP-first. Independent de Symbai POS/Hub.",
   "author": {
     "name": "Symbai",
