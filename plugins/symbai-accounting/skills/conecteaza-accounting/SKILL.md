@@ -1,51 +1,26 @@
 ---
 name: conecteaza-accounting
-description: Configurează sau repară conexiunea MCP la Symbai Accounting (serverul „symbai-accounting"). La „conectează-mă la contabilitate", „nu apar tool-urile de contabilitate", „văd puține tool-uri", „nu am acces la facturile mele", 401 / „Token MCP lipsă", „Some MCP servers could not be loaded".
+description: Conectează sau repară accesul nominal la Symbai Accounting prin Symbai Connect și OAuth pentru Codex, Claude Code ori un client MCP compatibil; inclusiv manageri POS cu drepturi HR delegate.
 ---
 
-# Conectează / repară conexiunea Symbai Accounting (MCP)
+# Conectarea la Accounting
 
-Scop: serverul MCP `symbai-accounting` să apară conectat în sesiunile Claude Code, cu tool-urile lui (`get_dashboard`, `list_invoices`, `post_journal_entry`, `list_tax_declarations` etc.).
+Folosește contul propriu al persoanei și aceeași instalare Symbai Connect ca pentru POS. Accounting are propria conexiune per firmă. Nu cere tokenul contabilului, parola acestuia sau cheile aplicației REGES. Nu copia acreditările între utilizatori.
 
-> **Important — diferit de Symbai POS**: tokenul de contabilitate se creează **DIN APLICAȚIA de contabilitate**, NU din portalul Hub. Un client de Symbai Accounting **nu are nevoie de cont Symbai Hub** — totul e local.
+1. Verifică firma și persoana care trebuie să primească acces. Administratorul adaugă persoana în Accounting → Securitate, pe firma corectă. Un rol POS nu acordă automat acces Accounting.
+2. Pentru managerul care lucrează numai prin asistent pe HR, deschide Securitate → Roluri, apasă „Adaugă: Asistent HR prin Connect” dacă rolul lipsește, apoi atribuie acest rol managerului. Alternativ activează acest drept pe un rol potrivit, cu vizualizare sau modificare; schimbarea unui rol afectează toți utilizatorii lui. Nu acorda administrarea securității pentru acest scop. Pentru contabilul care procesează certificate medicale prin această delegare, activează suplimentar payroll=edit pe rolul lui; aceasta nu este necesară managerului care doar depune actele. Dacă trebuie să lucreze și în interfața HR web, drepturile web se acordă separat, explicit.
+3. Persoana se autentifică în Accounting cu propriul cont. Deschide „Asistenții mei” (/my-assistants) sau Integrări → Symbai Connect. Dacă Connect există deja, păstrează instalarea; pachetul personalizat adaugă activarea Accounting.
+4. În Connect → „Firmele și accesul tău”, adaugă adresa firmei afișată în Accounting (/mcp/companies/<companyId>) și conectează Codex sau Claude Code. Contul propriu autorizează firma și permisiunile în browser. Loginul modelului, activarea Connect și accesul MCP sunt verificări distincte.
+5. Reîmprospătează conexiunea/clientul numai când este necesar. Verifică tool-urile reale și get_connection_identity: product=accounting, companyId și userId corecte. Nu refolosi ID-urile POS. Pentru HR citește get_hr_workflow_guide, apoi o listă permisă, fără scrieri de probă.
 
-## Ce îți trebuie de la utilizator
+Pentru ChatGPT sau alt client MCP compatibil OAuth folosește endpointul companiei și autentificarea nominală, dacă acel client oferă conectare MCP. Nu pretinde că instalarea Connect conectează automat orice client extern.
 
-- **URL-ul instanței de contabilitate**: `https://<instanța-ta>/mcp` (de regulă `https://accounting.symbai.app/mcp`, sau adresa pe care o folosește pentru a se loga în contabilitate). UI-ul afișează endpoint-ul exact sub cardul de token.
-- **Tokenul** `symbai_acc_mcp_...` — îl creează din aplicația de contabilitate → **Setări → Integrări → „Acces AI (MCP)"** → butonul **„Token nou"**. Alege modulele de **citire** și, separat, modulele pe care AI-ul are voie să le **modifice**, apoi „Creează token". Tokenul se afișează **o singură dată**. Dacă l-a pierdut: revocă tokenul vechi și creează altul (10 secunde) — nu se poate recupera.
+## Depanare
 
-## Configurarea corectă
+- Firmă absentă: verifică apartenența activă în Accounting și rolul persoanei. Pentru delegare HR este necesar hr-assistant=view/edit; pentru acces administrativ complet rămân drepturile administrative.
+- Tool absent: tools/list reflectă atât consimțământul OAuth, cât și drepturile curente ale persoanei. Delegarea HR ascunde operațiile financiare, SQL, politici de aprobare și secrete. Nu schimba contul cu cel al contabilului pentru a ocoli restricția.
+- 401 după retragerea rolului, dezactivarea persoanei sau a firmei este așteptat. Corectează apartenența autorizată și reautorizează; nu crea automat tokenuri manuale.
+- Contul nominal poate fi suspendat sau dreptul HR poate fi retras din Securitate. Administratorul poate revoca o conexiune concretă din Integrări → administrarea avansată. Revocarea activării Connect este distinctă de revocarea accesului MCP.
+- Tokenurile manuale rămân pentru integrări avansate administrate explicit. Folosește-le numai dacă utilizatorul cere acea variantă; nu le cere în chat și nu le afișa în loguri.
 
-> Cel mai probabil utilizatorul **NU** are CLI-ul `claude` în terminal. Dacă `claude ...` dă „command not found", e NORMAL — treci la metoda 1 (editare fișier).
-
-1. **Editează `.claude.json`** (metoda implicită) — din folderul home (Windows: `C:\Users\<nume>\.claude.json`; macOS/Linux: `~/.claude.json`; creează-l dacă lipsește). În obiectul `"mcpServers"` de la **nivelul rădăcină**, adaugă (păstrând restul fișierului):
-   ```json
-   "symbai-accounting": { "type": "http", "url": "<URL>", "headers": { "Authorization": "Bearer <TOKEN>" } }
-   ```
-   După salvare, cere utilizatorului să închidă complet și să redeschidă aplicația.
-
-2. **Scurtătură cu CLI** — DOAR dacă `claude --version` afișează o versiune:
-   ```
-   claude mcp add --transport http --scope user symbai-accounting <URL> --header "Authorization: Bearer <TOKEN>"
-   ```
-   `--scope user` e obligatoriu (altfel conexiunea se leagă doar de folderul curent).
-
-Pentru comoditate, aplicația îți dă în cardul de token, la creare, **exact** comanda CLI și un **mesaj de lipit în chat** — folosește-le ca atare.
-
-## Capcana — claude_desktop_config.json (NU-l folosi)
-
-`claude_desktop_config.json` / Settings → Developer → „Local MCP servers" acceptă DOAR servere stdio locale. O intrare HTTP `symbai-accounting` acolo NU funcționează și dă la pornire: **„Some MCP servers could not be loaded ... skipped: symbai-accounting"**. Pentru Claude Code, serverul trăiește în `~/.claude.json` și se vede la `/mcp` — panoul „Local MCP servers" rămâne gol (e normal). Dacă apare eroarea: șterge DOAR intrarea greșită din acel fișier și fă configurarea corectă de mai sus.
-
-## Verificare (în ordine)
-
-1. **Instanța e activă?** POST la `<URL>` fără header → **HTTP 401** „Token MCP lipsă...". 404/HTML → URL greșit.
-2. **Tokenul e valid?** Același POST cu `Authorization: Bearer <TOKEN>` + body JSON-RPC `initialize` → **HTTP 200**. Tot 401 → token revocat/expirat/greșit → regenerează din aplicație.
-3. **După restart**, sesiune nouă: `/mcp` arată `symbai-accounting` conectat.
-4. **Confirmă TU cu un tool** — cheamă mai întâi `get_company` sau `get_dashboard`, apoi un tool din modulul dorit (de exemplu `list_invoices`). Dacă primul merge, conexiunea este bună. Un tool operațional absent sau „permisiune insuficientă" înseamnă de regulă că modulul de citire/scriere nu este acordat tokenului → Setări → Integrări → recreează tokenul numai cu accesul dorit.
-
-## Alte cauze frecvente
-
-- **Aplicația nu a fost repornită complet** — conexiunile MCP se încarcă la pornire.
-- **„Permisiune insuficientă" la scriere** — modulul nu e bifat pe token; tokenurile nu se pot edita, deci recreează-l cu modulele dorite.
-- **Accesul s-a oprit brusc** — tokenul a fost revocat sau a expirat → verifică în Setări → Integrări → Acces AI (MCP).
-- **„Văd puține tool-uri"** — la contabilitate lista din `tools/list` e exact ce permit modulele tokenului; nu există filtrare pe rol de angajat sau pe arie (brand/locație). Dacă lipsesc tool-uri, recreează tokenul cu modulele dorite. NU e o limită a sesiunii. (Diferit de conexiunea `symbai` la POS, unde contul de angajat e filtrat și de rolul POS și de aria lui — acolo diagnosticul e `verifica_conexiune`, iar remediul e în Personal.)
+Nu acorda drepturi unei persoane nenominalizate. Nu testa conexiunea prin angajări, trimitere de acte la semnat sau transmitere REGES reale.

@@ -1,6 +1,6 @@
 # Catalog MCP — Symbai Accounting
 
-> Sincronizat cu registry-ul aplicației la 15 august 2026: **301 tool-uri**. Sursa de adevăr pentru sesiunea curentă rămâne `tools/list`, deoarece tokenul vede numai modulele sale de citire/scriere. Nu presupune că un tool lipsește doar fiindcă nu apare pe un token restrâns — și nu presupune o „limită a sesiunii": la contabilitate nu există filtrare pe rol de angajat sau pe arie, lista e exact modulele tokenului (spre deosebire de conexiunea `symbai` la POS, unde contul de angajat e filtrat și de rolul POS și de aria lui).
+> Sursa de adevăr este `tools/list`. Accounting acceptă conexiuni nominale OAuth prin Symbai Connect. Lista depinde de consimțământ și de rolul activ al persoanei; delegarea HR expune doar operațiile de personal aprobate, fără SQL sau rapoarte financiare.
 
 ## Permisiuni și reguli de siguranță
 
@@ -13,6 +13,12 @@
 - După orice scriere, verifică printr-un tool de citire. Interfața poate avea cache.
 - Listele sunt paginate/plafonate; folosește `limit`, `offset`, `search` și filtrele expuse.
 - Secretele, CNP-urile și alte câmpuri sensibile sunt redactate. Nu încerca să le recuperezi prin SQL.
+
+## Personal și colaborarea cu contabilul
+
+Începe cu `get_hr_workflow_guide`. Cererile și anexele sunt comune managerului și contabilului din aceeași firmă: `create_employee_hr_request`, `list_employee_hr_requests`, `review_employee_hr_request`. Contractele, actele adiționale, declarațiile și adeverințele se generează în dosarul HR și se trimit cu `send_hr_document_for_signature`, care completează singur salariatul și reprezentantul cu emailurile lor (`preview_hr_document_signers` arată ce lipsește). Pachete pentru mai mulți salariați: `send_hr_document_pack`. Dosarul disciplinar are propriul flux; vezi skill-ul `hr-acte-si-disciplinar`. Zilierii, străinii și actele traduse în limba persoanei: skill-ul `zilieri-si-straini`.
+
+Concediul medical are două etape: cerere HR cu scan și verificare/validare separată pentru salarizare. Contabilul folosește `create_medical_certificate_draft`, `update_medical_certificate_draft`, `validate_medical_certificate`, cu delegare `hr-assistant=edit` și drept nominal separat `payroll=edit` (ori cu o conexiune administrativă și `payroll=edit`). Rolul izolat al managerului HR nu include dreptul suplimentar de validare pentru salarizare.
 
 ## Orientare rapidă
 
@@ -27,7 +33,7 @@
 | Bancă / casă | `list_bank_accounts`, `list_bank_transactions`, `list_cash_registers` | `create_*` / `update_*`, apoi tranzacția dedicată |
 | Import structurat | `get_accounting_import_fields`, `preview_accounting_import` | preview → `execute_accounting_import` cu confirmare |
 | Salarizare | `get_payroll_summary`, `list_payroll_runs`, `check_payroll_approval_readiness` | `generate_payroll_lines`, `finalize_payroll_run` |
-| REGES | `get_reges_integration_health`, `list_reges_pending` | tool-ul dedicat transmiterii, cu confirmare |
+| REGES | `get_reges_connection_setup`, `get_reges_integration_health`, `list_reges_pending` | `configure_reges_connection` pentru accesul propriu al angajatorului; transmiterea are tool-uri separate, cu confirmare |
 | Declarații / D406 | `list_tax_declarations`, `dry_run_d406` | preview → apply/attest/submit dedicat |
 | Perioadă închisă | `list_period_closings`, `get_period_closing_readiness` | `reopen_period` / `unlock_month_everywhere` numai după acord |
 | Integrare POS/Supplier | `get_platform_sync_health`, `list_platform_sync_logs` | preview → resync/repair dedicat |
@@ -137,7 +143,7 @@ Importul MCP primește antetele, rândurile și maparea semantică explicită; `
 - Calcul și obligații: `list_labor_obligations`, `list_payroll_run_lines`, `get_payroll_summary`, `generate_payroll_lines`, `settle_labor_obligation`, `check_payroll_approval_readiness`, `get_payslip`
 - Finalizare: `finalize_payroll_run`, `reopen_payroll_run`, `prepare_d112`
 
-## HR, contracte individuale, REGES și zilieri — 93
+## HR, contracte individuale, REGES și zilieri — 112
 
 - Citiri: `list_employment_contracts`, `get_employment_contract`, `list_employment_detachments`, `list_incoming_reges_detachments`, `list_contract_amendments`, `list_hr_documents`, `get_hr_document`, `list_reges_pending`, `list_reges_transmissions`, `get_reges_nomenclator`, `get_reges_profile`, `get_reges_integration_health`, `get_reges_deadline_rules`
 - Angajare/contract: `hire_employee`, `complete_employment_contract_draft`, `review_employment_contract_legal_terms`, `amend_employment_contract`, `review_legacy_amendment_snapshot`, `confirm_contract_role_classification`, `apply_signed_employment_amendment`, `cancel_employment_amendment`, `update_employee_tax_identity`, `designate_payroll_primary_contract`
@@ -146,7 +152,9 @@ Importul MCP primește antetele, rândurile și maparea semantică explicită; `
 - REGES: `submit_employee_to_reges`, `submit_contract_to_reges`, `submit_detachment_to_reges`, `end_detachment_in_reges`, `cancel_detachment_in_reges`, `submit_amendment_to_reges`, `submit_termination_to_reges`, `submit_suspension_to_reges`, `poll_reges_results`, `resolve_ambiguous_reges_message`
 - Corecții/mutări REGES: `correct_employee_in_reges`, `submit_reges_exceptional_contract_operation`, `submit_contract_move_to_reges`, `cancel_contract_move_in_reges`, `respond_incoming_reges_move`
 - Cozi și nomenclatoare REGES: `list_reges_queue_events`, `sync_reges_notifications`, `sync_incoming_reges_moves`, `sync_reges_move_lifecycle`, `save_reges_employer_allowance_type`, `delete_reges_employer_allowance_type`
-- Semnare: `send_contract_for_signature`, `get_contract_signature_status`
+- Semnare: `send_hr_document_for_signature`, `send_contract_for_signature`, `preview_hr_document_signers`, `list_authorized_hr_signers`, `get_contract_signature_status`, `resend_signature_request`, `void_signature_request`, `get_signature_audit_certificate`
+- Pachete de declarații: `send_hr_document_pack`; acte adiționale de transmis în REGES: `list_pending_reges_amendments`
+- Dosar disciplinar: `open_disciplinary_case`, `appoint_disciplinary_commission`, `schedule_disciplinary_hearing`, `record_disciplinary_hearing`, `issue_disciplinary_decision`, `record_disciplinary_communication`, `send_disciplinary_document`, `add_disciplinary_case_file`, `close_disciplinary_case`, `cancel_disciplinary_case`, `expunge_disciplinary_sanction`, `record_disciplinary_court_outcome`, `list_disciplinary_cases`, `get_disciplinary_case`
 - Cereri HR ale angajatului (concediu, adeverințe, acte): `list_employee_hr_request_catalog`, `create_employee_hr_request`, `list_employee_hr_requests`, `get_employee_hr_request`, `get_employee_hr_request_file`, `review_employee_hr_request`
 - Aprobări pe cereri HR: `list_employee_hr_approval_inbox`, `decide_employee_hr_approval`, `list_employee_hr_approval_policies`, `save_employee_hr_approval_policy`, `set_employee_hr_approval_policy_enabled`, `simulate_employee_hr_approval_route`
 - Documente HR (șabloane și generare): `list_hr_document_templates`, `save_hr_document_template`, `generate_hr_document`, `edit_hr_document_draft`
@@ -154,6 +162,10 @@ Importul MCP primește antetele, rândurile și maparea semantică explicită; `
 - Conformitate angajat (medicina muncii, SSM, instruiri): `list_employee_compliance`, `schedule_employee_compliance`, `complete_employee_compliance`
 - Modificări de detașare: `create_employment_detachment_modification`, `record_employment_detachment_modification_communication`, `cancel_employment_detachment_modification`
 - Zilieri: `list_day_laborers`, `list_day_laborer_entries`, `get_day_laborer_limits`, `list_day_laborer_registries`, `register_day_laborer_day`, `cancel_day_laborer_day`, `mark_day_laborer_day_paid`, `generate_day_laborer_registry`, `mark_day_laborer_registry_submitted`, `generate_day_laborer_payment_receipt`, `generate_day_laborer_ssm_document`
+- Zilieri — ziua de lucru și ITM (portal fără API, completat în browser): `get_day_laborer_today`, `get_day_laborer_itm_sheet`, `get_day_laborer_itm_portal_pack`, `record_day_laborer_itm_transmission`, `record_day_laborer_itm_correction`, `confirm_day_laborer_ssm`, `generate_day_laborer_information`
+- Zilieri — dosar, străini, acorduri, evenimente: `get_day_laborer_profile`, `update_day_laborer`, `create_day_laborer_declaration`, `revoke_day_laborer_declaration`, `record_day_laborer_incident`, `mark_day_laborer_incident_notified`, `list_day_laborer_incidents`
+- Zilieri — plată și contabilitate: `mark_day_laborer_days_paid`, `preview_day_laborer_payment_journal`, `post_day_laborer_payment_journal`
+- Limba documentelor HR (traducere atașată, româna prevalează): `list_hr_document_languages`, `set_employee_document_language`; `generate_hr_document` acceptă `translationLanguage`
 
 ## Integrări POS/Supplier — 14
 
