@@ -29,6 +29,8 @@ Concediul medical are două etape: cerere HR cu scan și verificare/validare sep
 | Client sau furnizor | `list_clients`, `list_suppliers`, `get_partner_stats` | `create_*`, `update_*` |
 | Facturi emise | `list_invoices`, `list_outgoing_invoices` | `create_invoice`, `update_invoice` |
 | Facturi primite | `list_bills`, `list_incoming_invoices`, `get_inbox_quality_report` | `create_bill`, `update_bill` |
+| Factură de furnizor: mapare, NIR, notă | `list_invoice_intake_decisions`, `get_invoice_intake_decision`, `get_invoice_mapping_guide` | `map_incoming_invoice_line` → `approve_incoming_invoice` → `preview_incoming_invoice_posting` → `post_incoming_invoice_to_nir` / `post_incoming_invoice_accounting`; skill-ul `receptie-factura` |
+| Reguli de mapare | `list_mapping_rules`, `list_supplier_products_to_map`, `preview_invoice_mapping_repairs` | `update_mapping_rule`, `map_supplier_product_on_open_invoices`, `apply_invoice_mapping_repair` |
 | Stoc | `list_warehouses`, `list_products`, `list_product_types`, `list_product_categories`, `get_warehouse_stock` | mișcare: `create_inventory_document` → `apply_inventory_document`; inventariere: `create_inventory_count` → `post_inventory_count` / `reverse_inventory_count` |
 | Bancă / casă | `list_bank_accounts`, `list_bank_transactions`, `list_cash_registers` | `create_*` / `update_*`, apoi tranzacția dedicată |
 | Import structurat | `get_accounting_import_fields`, `preview_accounting_import` | preview → `execute_accounting_import` cu confirmare |
@@ -64,16 +66,48 @@ Clienții/furnizorii sincronizați din POS păstrează identitatea operațional�
 - `create_invoice`, `update_invoice`, `delete_invoice`
 - `list_efactura_inbox`, `check_efactura_status`, `get_efactura_deadline`, `upload_invoice_to_efactura`
 
-## Cheltuieli, facturi primite și reconciliere AP — 28
+## Cheltuieli, facturi primite și reconciliere AP — 24
 
 - Citire curentă: `get_bill`, `list_incoming_invoices`, `get_incoming_invoice`, `list_mapping_rules`, `check_duplicate_invoice`
 - Calitate/proveniență: `get_reception_invoice_link`, `get_mapping_rule_history`, `get_inbox_quality_report`, `get_bill_payment_header_reconciliation`, `list_purchase_bill_identity_reviews`
-- Control POS/NIR: `get_pos_nir_bill_line_account_reconciliation`, `get_pos_asis_duplicate_bill_reconciliation`, `get_senneville_qa_orphan_bill_retirement`, `get_pos_cancelled_nir_orphan_bill_retirement`, `get_senneville_deleted_photo_invoice_25100_retirement`
+- Control POS/NIR: `get_pos_nir_bill_line_account_reconciliation`, `get_pos_asis_duplicate_bill_reconciliation`, `get_pos_cancelled_nir_orphan_bill_retirement`
 - Preview: `preview_pos_supplier_subledger_repair`
 - Scriere uzuală: `create_bill`, `update_bill`, `create_mapping_rule`, `bulk_delete_mapping_rules`, `resolve_purchase_bill_identity_review`
-- Reparații confirmate: `apply_pos_supplier_subledger_repair`, `repair_bill_payment_headers`, `repair_pos_nir_bill_line_accounts`, `repair_pos_asis_duplicate_bills`, `retire_senneville_qa_orphan_bills`, `retire_pos_cancelled_nir_orphan_bills`, `retire_senneville_deleted_photo_invoice_25100`
+- Reparații confirmate: `apply_pos_supplier_subledger_repair`, `repair_bill_payment_headers`, `repair_pos_nir_bill_line_accounts`, `repair_pos_asis_duplicate_bills`, `retire_pos_cancelled_nir_orphan_bills`
 
-Tool-urile cu nume de incident/tenant sunt workbench-uri controlate. Folosește-le numai când preview-ul dedicat găsește exact cohorta vizată; rezultat gol înseamnă „nu se aplică”, nu eroare.
+Folosește reparațiile numai când preview-ul dedicat găsește exact cohorta vizată; rezultat gol înseamnă „nu se aplică”, nu eroare.
+
+## Facturi de la furnizori: import, mapare, recepție (NIR) și corecții — 85
+
+Fluxul pas cu pas este în skill-ul `receptie-factura`; stările, codurile și tabelele în `knowledge/mapare-facturi.md`; ghidul live în resursa `symbai://mapare-facturi`. Citirile cer modulul `cheltuieli`; scrierile cer `cheltuieli`, plus modulele notate mai jos. Toate scrierile trec prin aceleași verificări ca aplicația (drepturi, luni închise, facturi administrate din Symbai POS). Ele cer `confirm:true`, cu două excepții: `ecran_propune` doar pregătește propuneri nesalvate, iar `create_mapping_rule` se folosește numai la cererea utilizatorului.
+
+- Ghid și decizie: `get_invoice_mapping_guide`, `list_invoice_intake_decisions`, `get_invoice_intake_decision`, `preview_incoming_invoice_posting`
+- Import și document: `list_available_efactura_messages`, `preview_efactura_inbox_message`, `import_efactura_inbox_messages`, `create_incoming_invoice_draft` (+`email` cu `emailDocument`/`inboxDocument`), `list_email_invoice_sources`, `get_email_invoice_source`, `check_duplicate_invoice`, `list_incoming_invoices`, `get_incoming_invoice`, `get_incoming_invoice_lines`, `update_incoming_invoice_context`, `add_incoming_invoice_line`, `update_incoming_invoice_line`, `delete_incoming_invoice_line`, `delete_incoming_invoice_draft`
+- Maparea liniilor: `get_invoice_line_mapping_suggestions`, `get_supplier_mapping_context`, `list_expense_destination_types`, `map_incoming_invoice_line` (+`stocuri` numai cu `barcode`), `accept_invoice_ai_suggestions`, `accept_invoice_proposed_product` (+`stocuri`), `apply_invoice_saved_mappings`, `set_invoice_products_type` (+`stocuri`)
+- Mapare AI în lot: `suggest_incoming_invoice_mappings`, `get_invoice_mapping_jobs`, `get_invoice_mapping_job`, `stop_invoice_mapping_job`, `clear_invoice_ai_suggestions`
+- Operații pe linii: `split_invoice_line`, `undo_invoice_line_split`, `absorb_invoice_line`, `undo_invoice_line_absorption`, `resolve_invoice_traceability` (+`stocuri`), `map_unmatched_invoice_traceability` (+`stocuri`)
+- Repartizarea cheltuielii pe unități: `list_invoice_expense_allocation_units`, `get_invoice_expense_allocations`, `set_invoice_expense_allocations`, `get_invoice_line_expense_allocations`, `set_invoice_line_expense_allocations`
+- „De mapat” (o decizie pentru un articol pe toate facturile deschise): `list_supplier_products_to_map`, `map_supplier_product_on_open_invoices`
+- Reguli memorate: `list_mapping_rules`, `get_mapping_rule`, `get_mapping_rule_history`, `get_mapping_rule_stats`, `suggest_invoice_mapping_rules`, `list_invoice_mapping_memory`, `list_mapping_rules_without_order_preference`, `create_mapping_rule`, `update_mapping_rule`, `delete_mapping_rule`, `bulk_delete_mapping_rules`
+- Conflicte, mutare și reparare: `list_mapping_rule_conflicts`, `list_supplier_product_mapping_conflicts`, `resolve_supplier_product_mapping_conflict`, `preview_mapping_rule_repoint`, `repoint_product_mapping_rules`, `preview_invoice_mapping_repairs`, `apply_invoice_mapping_repair`
+- Conversii de ambalaj învățate: `list_pack_conversions`, `delete_pack_conversion`
+- Recepție: `list_invoice_receipt_candidates`, `dismiss_invoice_receipt_candidate` (+`stocuri`), `set_invoice_line_reception_warehouse` (+`stocuri`), `record_invoice_physical_reception` (+`stocuri`), `get_incoming_invoice_exchange_rate`, `get_reception_invoice_link`, `generate_invoice_from_reception` (modul `stocuri` +`cheltuieli`), `delete_reception_generated_invoice_draft` (modul `stocuri` +`cheltuieli`), `handoff_incoming_invoice_to_pos` (+`stocuri`)
+- Aprobare și înregistrare: `approve_incoming_invoice`, `post_incoming_invoice_to_nir` (+`stocuri`, `contabilitate`), `post_incoming_invoice_accounting` (+`contabilitate`)
+- Corecția documentelor înregistrate: `preview_incoming_invoice_full_storno`, `full_storno_incoming_invoice` (+`contabilitate`, `stocuri`)
+- Ecranul live Sym (pe Revizie AI și pe „De mapat”, numai pe conexiunea nominală a persoanei care are pagina deschisă): `ecran_citeste`, `ecran_arata`, `ecran_mapeaza`, `ecran_propune`, `ecran_finalizeaza` (+`contabilitate`; pentru NIR și +`stocuri`)
+- Calitate: `get_inbox_quality_report`
+
+Reguli de lucru:
+
+- Începe cu decizia (`get_invoice_intake_decision`): fiecare întrebare are `code`, `ask`, `lineIds` și `resolvers` (uneltele care o rezolvă).
+- `packMultiplier` este factorul TOTAL: câte unități de stoc ale produsului înseamnă o unitate a furnizorului, pasul de unitate inclus (bax de 12 buc = 12; sac de 25 kg facturat la bucată, produs în kg = 25). Unitățile care nu se convertesc singure primesc 409 `PACK_CONVERSION_REQUIRED` cu întrebarea de unitate; nu există 1:1 implicit.
+- Liniile fără produs (servicii, cheltuieli) se mapează pe un tip de cheltuială: `productTypeCode` din `list_expense_destination_types`.
+- `source:"manual"` la `map_incoming_invoice_line` numai pentru produsul ales sau confirmat de utilizator: învață regula furnizorului și se aplică liniilor identice ale facturii. Fără el, maparea asistentului nu învață reguli și nu se propagă. La `map_supplier_product_on_open_invoices` trimite `userConfirmed:true` numai când utilizatorul a ales sau a confirmat produsul: atunci învață regula o dată, pe linia reprezentativă. Fără el, liniile grupului se acceptă ca propunere a asistentului și regula nu se învață.
+- Arată `preview_incoming_invoice_posting` înainte de înregistrare și folosește unealta din `posting.tool`; niciodată NIR și înregistrare doar contabilă pentru aceeași factură.
+- `EFACTURA_RECEIPT_RECONCILIATION_REQUIRED`: o recepție existentă poate fi aceeași livrare. Decizia (legare în aplicație sau `dismiss_invoice_receipt_candidate` cu motivul utilizatorului) aparține utilizatorului.
+- Factura înregistrată nu se remapează. Documentul introdus manual, fără factura electronică din SPV: storno, apoi documentul corect. Factura din SPV nu se stornează intern: dacă furnizorul a greșit documentul, corecția este nota lui de credit, pe care `post_incoming_invoice_accounting` o înregistrează numai pentru servicii și cheltuieli (grupele 61–69), fără NIR sau stoc pe factura inițială, fără TVA la încasare și fără cheltuieli în avans; o notă de credit pentru marfă (`SUPPLIER_CREDIT_NOTE_REQUIRES_RETURN_WORKFLOW`) sau cu regim special (`SUPPLIER_CREDIT_SPECIAL_REGIME_UNSUPPORTED`) se predă contabilului. O greșeală internă de mapare pe o factură din SPV deja înregistrată nu cere notă de credit de la furnizor: dovezile merg la contabil, iar regula se corectează pentru facturile următoare.
+- `outcomeUnknown:true` (pe ecranul live: `rezultatIncert:true`): legătura s-a întrerupt și scrierea poate fi deja aplicată. Recitește factura înainte de orice reîncercare; nu repeta orbește o înregistrare.
+- Regulile `posOwned` și facturile introduse prin Symbai POS se corectează în POS.
 
 ## Jurnal, plan de conturi și închidere — 18
 
@@ -124,7 +158,7 @@ Inventarierea nu se creează prin aliasul legacy `inventariere`/`inventory`. Fol
 
 Importul MCP primește antetele, rândurile și maparea semantică explicită; `companyId` este impus din token. Preview-ul rulează validatorul canonic fără scriere. Execuția cere `confirm:true`, refuză erorile blocante și raportează distinct orice import parțial, care trebuie verificat înainte de reluare. Sunt executabile numai motoarele demonstrate sigure (`payroll`, `opening_balances`, `fixed_assets`). Importul payroll cere o singură perioadă `YYYY-MM`, fie mapată din fișier, fie declarată în valori implicite, iar preview-ul și execuția folosesc aceeași perioadă. Tipurile legacy rămase, inclusiv contactele care necesită convergență cu ownership-ul POS și resolverele canonice de partener, sunt refuzate fail-closed până la migrarea lor completă.
 
-## Declarații fiscale și SAF-T D406 — 26
+## Declarații fiscale și SAF-T D406 — 24
 
 - Tracker: `list_tax_declarations`, `get_tax_declaration`, `create_tax_declaration`, `update_tax_declaration`, `mark_tax_declaration_submitted`
 - Bază D406: `dry_run_d406`, `list_d406_fiscal_vector`, `attest_d406_fiscal_vector`
@@ -133,7 +167,6 @@ Importul MCP primește antetele, rândurile și maparea semantică explicită; `
 - Produse periodice: `get_d406_periodic_product_repair_issues`, `preview_d406_periodic_product_repair`, `apply_d406_periodic_product_repair`
 - Parteneri ANAF: `preview_d406_partner_anaf_profiles`, `apply_d406_partner_anaf_profiles`, `preview_d406_partner_anaf_rollover`, `apply_d406_partner_anaf_rollover`
 - Legacy/subledger: `preview_d406_legacy_subledger_repair`, `apply_d406_legacy_subledger_repair`
-- Legături ASIS: `preview_asis_document_journal_links`, `apply_asis_document_journal_links`
 
 ## Salarizare operațională — 25
 

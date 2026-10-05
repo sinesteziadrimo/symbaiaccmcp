@@ -18,6 +18,8 @@ Pentru conectare REGES, chei API ale angajatorului sau erori Account disabled / 
 
 Pentru manageri POS, angajări, acte adiționale, adeverințe, lichidări, concedii medicale sau schimb de acte cu contabilul → citește `get_hr_workflow_guide`. Conectarea este nominală prin același Symbai Connect; nu cere tokenul contabilului.
 
+Pentru facturile de la furnizori — import din SPV sau din document, maparea liniilor pe produse ori pe tipuri de cheltuială, factorul TOTAL de conversie, NIR sau nota contabilă, regulile de mapare, corecția prin storno → folosește skill-ul `receptie-factura`. Începe cu `get_invoice_intake_decision`.
+
 ## Permisiuni
 
 - **Citire**: poate fi completă sau limitată pe module (`readModules`). Contextul minim al firmei rămâne disponibil; rapoartele, facturile, jurnalul, declarațiile, partenerii, stocurile, salarizarea și banca apar numai dacă tokenul are citirea ariei respective. Un tool absent poate însemna permisiune restrânsă, nu implementare lipsă.
@@ -38,6 +40,7 @@ Pentru manageri POS, angajări, acte adiționale, adeverințe, lichidări, conce
 
 - `knowledge/00-overview.md` = harta modulelor și regulile generale pentru asistență MCP-first.
 - `knowledge/tools-mcp.md` = catalogul de capabilități pe arii; folosește-l când alegi primul tool.
+- `knowledge/mapare-facturi.md` = facturile de la furnizori: decizia de intrare, factorul TOTAL, cheltuieli, reguli, recepție, căile de înregistrare, storno.
 - `knowledge/01-plan-de-conturi-monografii.md` = plan de conturi RO, monografii uzuale, reguli pentru `post_journal_entry`.
 - `knowledge/02-tva.md` = TVA RO, cote orientative, TVA la încasare, D300/D390/D394.
 - `knowledge/03-declaratii-fiscale.md` = ce declarații fiscale există, când sunt relevante și cum pregătești datele.
